@@ -1,0 +1,102 @@
+(define (eval exp env)
+    (cond ((self-evaluating? exp) exp)
+        ((name? exp)
+            (eval-name exp env))
+        ((let? exp)
+            (eval-let exp env))
+        ((addition? exp)
+            (+ (eval (first-operand exp) env)
+                (eval (second-operand exp))))
+        ((product? exp)
+            (* (eval (first-operand exp) env)
+                (eval (second-operand exp) env)))
+    (else 
+        (error "Unknown expression type - EVAL" exp))))
+
+(define (repl)
+    (prompt-for-input)
+    (let ((input (read)))
+        (let ((output (eval input initial-environment)))
+            (print output)))
+    (repl))
+
+(define (prompt-for-input)
+    (display ">>>> "))
+
+(define (print object)
+    (write object)
+    (newline))
+
+(define (self-evaluating? exp)
+    (or (number? exp) (string? exp)))
+
+(define (addition? exp)
+    (and (pair? exp)
+        (eq? (car exp) '+)))
+
+(define (product? exp)
+    (and (pair? exp)
+        (eq? (car exp) '*)))
+
+(define (first-operand exp)
+    (cadr exp))
+
+(define (second-operand exp)
+    (caddr exp))
+
+(define (name? exp)
+    (symbol? exp))
+
+(define (let? exp)
+    (and (pair? exp)
+        (eq? (car exp) 'let)))
+
+(define (let-names exp)
+    (map car (cadr exp)))
+
+(define (let-inits exp)
+    (map cadr (cadr exp)))
+
+(define (let-body exp)
+    (caddr exp))
+
+(define (eval-name name env)
+    (cond 
+        ((null? env)
+            (error "Unbound name -- EVAL-NAME" name))
+        ((eq? name (caar env))
+            (cdar env))
+        (else
+            (eval-name name (cdr env)))))
+
+(define (eval-let exp env)
+    (let ((values (eval-exprs (let-inits exp) env)))
+        (let ((extended-environment (augment-environment (let-names exp) values env)))
+            (eval (let-body exp) extended-environment))))
+
+(define (eval-exprs exprs env)
+    (if (null? exprs)
+        (list)
+        (cons (eval (car exprs) env) (eval-exprs (cdr exprs) env))))
+
+(define (augment-environment names values env)
+    (if (null? names)
+        env
+        (cons
+            (cons (car names) (car values))
+            (augment-environment (cdr names) (cdr values) env))))
+
+(define empty-environment (list))
+
+(define initial-bindings
+    (list 
+        (cons 'pi 3.14159)
+        (cons 'e 2.71828)
+        ))
+
+(define initial-environment
+    (augment-environment 
+        (map car initial-bindings)
+        (map cdr initial-bindings) 
+        empty-environment))
+
