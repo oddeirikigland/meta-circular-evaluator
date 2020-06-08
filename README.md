@@ -30,6 +30,10 @@ You're using the meta circular evaluator when you see `>>>>` in the REPL.
 12
 >>>> pi
 3.14159
+>>>> e
+2.71828
 >>>> (let ((a 3) (b 4)) (* a b))
 12
+>>>> (let ((e 10)) (* pi e))
+31.4159
 ```
