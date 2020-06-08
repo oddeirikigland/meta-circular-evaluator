@@ -1,5 +1,7 @@
 # meta-circular-evaluator
 
+Meta-Circular evaluator is an evaluator written in the language that it evaluates. An evaluator is a program that computes the meaning of a program.
+
 ## Requirements
 
 * MIT/GNU Scheme
