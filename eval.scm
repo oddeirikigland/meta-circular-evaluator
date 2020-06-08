@@ -6,7 +6,7 @@
             (eval-let exp env))
         ((addition? exp)
             (+ (eval (first-operand exp) env)
-                (eval (second-operand exp))))
+                (eval (second-operand exp) env)))
         ((product? exp)
             (* (eval (first-operand exp) env)
                 (eval (second-operand exp) env)))
