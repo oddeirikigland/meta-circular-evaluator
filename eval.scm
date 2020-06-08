@@ -10,6 +10,10 @@
         ((product? exp)
             (* (eval (first-operand exp) env)
                 (eval (second-operand exp) env)))
+        ((flet? exp)
+            (eval-flet exp env))
+        ((call? exp)
+            (eval-call exp env))
     (else 
         (error "Unknown expression type - EVAL" exp))))
 
@@ -92,6 +96,7 @@
     (list 
         (cons 'pi 3.14159)
         (cons 'e 2.71828)
+        (cons 'square (make-function '(x) '((* x x))))
         ))
 
 (define initial-environment
@@ -100,3 +105,58 @@
         (map cdr initial-bindings) 
         empty-environment))
 
+(define (call? exp)
+    (pair? exp))
+
+(define (call-operator exp)
+    (car exp))
+
+(define (call-operands exp)
+    (cdr exp))
+
+(define (flet? exp)
+    (and (pair? exp)
+        (eq? (car exp) 'flet)))
+
+(define (flet-names exp)
+    (map car (cadr exp)))
+
+(define (flet-functions exp)
+    (map 
+        (lambda (f)
+            (make-function (cadr f) (cddr f)))
+        (cadr exp)))
+
+(define (make-function parameters body)
+    (cons 'function (cons parameters body)))
+
+(define (flet-body exp)
+    (caddr exp))
+
+(define (eval-flet exp env)
+    (let ((extended-environment 
+        (augment-environment
+           (flet-names exp)
+           (flet-functions exp)
+           env)))
+        (eval (flet-body exp) extended-environment)))
+
+(define (function? obj)
+    (and (pair? obj)
+        (eq? (car obj) 'function)))
+
+(define (function-parameters func)
+    (cadr func))
+
+(define (function-body func)
+    (caddr func))
+
+(define (eval-call exp env)
+    (let ((func (eval-name (call-operator exp) env))
+        (args (eval-exprs (call-operands exp) env)))
+        (let ((extended-environment
+            (augment-environment
+                (function-parameters func)
+                args
+                env)))
+            (eval (function-body func) extended-environment))))

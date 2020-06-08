@@ -38,4 +38,8 @@ You're using the meta circular evaluator when you see `>>>>` in the REPL.
 12
 >>>> (let ((e 10)) (* pi e))
 31.4159
+>>>> (flet ((bar (x) (+ x 3))) (bar 5))
+8
+>>>> (square 5)
+25
 ```
