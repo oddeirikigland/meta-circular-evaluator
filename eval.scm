@@ -17,13 +17,6 @@
     (else 
         (error "Unknown expression type - EVAL" exp))))
 
-(define (repl)
-    (prompt-for-input)
-    (let ((input (read)))
-        (let ((output (eval input initial-environment)))
-            (print output)))
-    (repl))
-
 (define (prompt-for-input)
     (display ">>>> "))
 
@@ -92,19 +85,6 @@
 
 (define empty-environment (list))
 
-(define initial-bindings
-    (list 
-        (cons 'pi 3.14159)
-        (cons 'e 2.71828)
-        (cons 'square (make-function '(x) '((* x x))))
-        ))
-
-(define initial-environment
-    (augment-environment 
-        (map car initial-bindings)
-        (map cdr initial-bindings) 
-        empty-environment))
-
 (define (call? exp)
     (pair? exp))
 
@@ -160,3 +140,23 @@
                 args
                 env)))
             (eval (function-body func) extended-environment))))
+
+(define initial-bindings
+    (list 
+        (cons 'pi 3.14159)
+        (cons 'e 2.71828)
+        (cons 'square (make-function '(x) '((* x x))))
+        ))
+
+(define initial-environment
+    (augment-environment 
+        (map car initial-bindings)
+        (map cdr initial-bindings) 
+        empty-environment))
+
+(define (repl)
+    (prompt-for-input)
+    (let ((input (read)))
+        (let ((output (eval input initial-environment)))
+            (print output)))
+    (repl))
