@@ -4,18 +4,12 @@
             (eval-name exp env))
         ((let? exp)
             (eval-let exp env))
-        ((addition? exp)
-            (+ (eval (first-operand exp) env)
-                (eval (second-operand exp) env)))
-        ((product? exp)
-            (* (eval (first-operand exp) env)
-                (eval (second-operand exp) env)))
         ((flet? exp)
             (eval-flet exp env))
         ((call? exp)
             (eval-call exp env))
-    (else 
-        (error "Unknown expression type - EVAL" exp))))
+        (else
+            (error "Unknown expression type - EVAL" exp))))
 
 (define (prompt-for-input)
     (display ">>>> "))
@@ -26,20 +20,6 @@
 
 (define (self-evaluating? exp)
     (or (number? exp) (string? exp)))
-
-(define (addition? exp)
-    (and (pair? exp)
-        (eq? (car exp) '+)))
-
-(define (product? exp)
-    (and (pair? exp)
-        (eq? (car exp) '*)))
-
-(define (first-operand exp)
-    (cadr exp))
-
-(define (second-operand exp)
-    (caddr exp))
 
 (define (name? exp)
     (symbol? exp))
@@ -134,18 +114,38 @@
 (define (eval-call exp env)
     (let ((func (eval-name (call-operator exp) env))
         (args (eval-exprs (call-operands exp) env)))
+        (if (primitive? func)
+            (apply-primitive-operation func args)
         (let ((extended-environment
             (augment-environment
                 (function-parameters func)
                 args
                 env)))
-            (eval (function-body func) extended-environment))))
+            (eval (function-body func) extended-environment)))))
+
+(define (make-primitive f)
+    (list 'primitive f))
+
+(define (primitive? obj)
+    (and (pair? obj)
+        (eq? (car obj) 'primitive)))
+
+(define (primitive-operation prim)
+    (cadr prim))
+
+(define (apply-primitive-operation prim args)
+    (apply (primitive-operation prim) args))
 
 (define initial-bindings
     (list 
         (cons 'pi 3.14159)
         (cons 'e 2.71828)
         (cons 'square (make-function '(x) '((* x x))))
+        (cons '+ (make-primitive +))
+        (cons '* (make-primitive *))
+        (cons '- (make-primitive -))
+        (cons '/ (make-primitive /))
+        (cons '= (make-primitive =))
         ))
 
 (define initial-environment
