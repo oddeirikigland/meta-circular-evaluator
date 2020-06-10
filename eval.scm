@@ -19,7 +19,7 @@
     (newline))
 
 (define (self-evaluating? exp)
-    (or (number? exp) (string? exp)))
+    (or (number? exp) (string? exp) (boolean? exp)))
 
 (define (name? exp)
     (symbol? exp))
